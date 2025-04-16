@@ -1,0 +1,65 @@
+package com.example.banking.security;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+@Configuration
+public class WebSecurityConfig implements WebMvcConfigurer {
+
+    // Define in-memory users with roles
+    @Bean
+    InMemoryUserDetailsManager userDetailsService() {
+        UserDetails adminUser = User.withUsername("admin")
+                .password(passwordEncoder().encode("adminPassword"))
+                .roles("ADMIN")
+                .build();
+
+        UserDetails regularUser = User.withUsername("user")
+                .password(passwordEncoder().encode("userPassword"))
+                .roles("USER")
+                .build();
+
+        return new InMemoryUserDetailsManager(adminUser, regularUser);
+    }
+
+    // Password encoder bean
+    @Bean
+    PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    // Security filter chain configuration using Lambda DSL
+    @Bean
+    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http.csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/accounts/","/api/users/","/api/users/login","/api/users/register").permitAll() // Public endpoints
+                .requestMatchers("/api/accounts/**").hasRole("USER")  // Requires USER role
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")  // Requires ADMIN role
+                .anyRequest().authenticated()  // All other requests require authentication
+            )
+            .httpBasic(httpBasic -> {});  // Enable HTTP Basic Authentication with Lambda DSL
+            
+
+        return http.build();
+    }
+
+    // CORS configuration to allow requests from the frontend (localhost:3000)
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/api/**")
+                .allowedOrigins("http://localhost:3000")  // Allow frontend to access the backend
+                .allowedMethods("GET", "POST", "PUT", "DELETE")
+                .allowedHeaders("*");
+    }
+}

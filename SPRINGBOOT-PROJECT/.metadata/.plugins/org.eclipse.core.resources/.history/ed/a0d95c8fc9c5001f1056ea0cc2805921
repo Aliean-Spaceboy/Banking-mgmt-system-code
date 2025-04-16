@@ -1,0 +1,48 @@
+package com.example.banking.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.example.banking.model.Account;
+import com.example.banking.model.User;
+import com.example.banking.repo.AccountRepository;
+import com.example.banking.repo.UserRepository;
+
+@Service
+public class AccountService {
+    @Autowired
+    private AccountRepository accountRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    // Create a new account
+    public Account createAccount(Account account) {
+        // Check if the User is valid
+        if (account.getUser() == null || account.getUser().getId() == null) {
+            throw new IllegalArgumentException("User is required and must have a valid ID.");
+        }
+
+        // Optionally fetch the User entity to ensure it exists (this step can be skipped if the user is already validated)
+        User user = userRepository.findById(account.getUser().getId())
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + account.getUser().getId()));
+
+        // Set the valid user to the account
+        account.setUser(user);
+
+        // Save the account to the repository
+        return accountRepository.save(account);
+    }
+
+    // Fetch all accounts
+    public List<Account> getAllAccounts() {
+        return accountRepository.findAll();
+    }
+
+    // Find accounts by account number
+    public List<Account> findByAccountNumber(String accountNumber) {
+        return accountRepository.findByAccountNumber(accountNumber);
+    }
+}

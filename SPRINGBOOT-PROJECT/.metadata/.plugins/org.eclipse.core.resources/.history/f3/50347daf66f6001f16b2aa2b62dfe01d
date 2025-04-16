@@ -1,0 +1,5 @@
+package com.example.banking.security;
+
+public class CorsConfig {
+
+}
