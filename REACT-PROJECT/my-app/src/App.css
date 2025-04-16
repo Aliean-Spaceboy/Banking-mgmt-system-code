@@ -1,0 +1,25 @@
+/* 🔹 Global Background Image */
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+  }
+  
+  html, body {
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+  }
+.app-container {
+	 background-image: url("./Images/banking-bg.jpg");/* Replace with your image */
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+	min-height: 100vh;
+	padding-top: 80px; /* Prevent content from overlapping with the fixed navbar */
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+  }
+  
